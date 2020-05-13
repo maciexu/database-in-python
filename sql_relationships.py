@@ -20,11 +20,8 @@ for key in result.keys():
     print(key, getattr(resu
  
  
- 
- 
- 
-"""
-Joins
+   
+""" Joins
 stmt = stmt.select_from(
     census.join(
         state_fact, census.columns.state == 
