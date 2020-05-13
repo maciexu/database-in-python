@@ -52,10 +52,53 @@ print(results[0]['fips_state'])
 
 
 # Example 2 Updating multiple records
+"""
+When appending a where statement to an existing statement, make sure you include the name of the table as well as the name of the column, 
+for example 
+new_stmt = old_stmt.where(my_tbl.columns.my_col == 15).
+
+On the other hand, you do not need to include the name of the table when referencing a column in an update statement, e.g. 
+stmt = update(my_table).values(my_col = 10).
+
+== is a comparison operator ("is equal?"), and = is an assignment operator ("set equal to"). 
+Make sure you use an appropriate operator in your calls to where() and values().
+"""
+
+
+# Build a statement to update the notes to 'The Wild West': stmt
+stmt = update(state_fact).values(notes='The Wild West')
+
+# Append a where clause to match the West census region records: stmt_west
+stmt_west = stmt.where(state_fact.columns.census_region_name == 'West')
+
+# Execute the statement: results
+results = connection.execute(stmt_west)
+
+# Print rowcount
+print(results.rowcount)
 
 
 
+""" Correlated updates
+You can also update records with data from a select statement. This is called a correlated update. 
+It works by defining a select statement that returns the value you want to update the record 
+with and assigning that select statement as the value in update.
+"""
+# Build a statement to select name from state_fact: fips_stmt
+fips_stmt = select([state_fact.columns.name])
 
+# Append a where clause to match the fips_state to flat_census fips_code: fips_stmt
+fips_stmt = fips_stmt.where(
+    state_fact.columns.fips_state == flat_census.columns.fips_code)
+
+# Build an update statement to set the name to fips_stmt_where: update_stmt
+update_stmt = update(flat_census).values(state_name=fips_stmt)
+
+# Execute update_stmt: results
+results = connection.execute(update_stmt)
+
+# Print rowcount
+print(results.rowcount)
 
 
 
